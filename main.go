@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"os"
+
+	"github.com/gin-gonic/gin"
 
 	"taskforge/db"
+	"taskforge/routers/auth"
 )
 
 func main() {
@@ -17,5 +20,20 @@ func main() {
 	}
 	defer pool.Close()
 
-	fmt.Println("Database connected")
+	jwtKey := os.Getenv("JWT_SECRET")
+	if jwtKey == "" {
+		log.Fatal("JWT_SECRET is not set")
+	}
+
+	authHandler := auth.NewHandler(pool, []byte(jwtKey))
+
+	r := gin.Default()
+
+	authRoutes := r.Group("/auth")
+	authRoutes.POST("/register", authHandler.Register)
+	authRoutes.POST("/login", authHandler.Login)
+
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal(err)
+	}
 }
