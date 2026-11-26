@@ -70,10 +70,10 @@ func ListUsers(ctx context.Context, pool *pgxpool.Pool) ([]models.User, error) {
 	return users, rows.Err()
 }
 
-func UpdateUser(ctx context.Context, pool *pgxpool.Pool, user models.User) error {
+func UpdateUser(ctx context.Context, pool *pgxpool.Pool, user models.User, id int) error {
 	err := execOne(ctx, pool,
 		`UPDATE users SET username = $1, email = $2, role = $3 WHERE id = $4`,
-		user.Username, user.Email, user.Role, user.ID)
+		user.Username, user.Email, user.Role, id)
 	if isUniqueViolation(err) {
 		return ErrAlreadyExists
 	}
